@@ -47,7 +47,10 @@ Query for DB #2
 
 
 #### PHP MySQL Profiler ####
-PHP MySQL profiler allows you to trace SQL queries made in PHP code, the number of times they are called and the break down of their open, execution, prepare and fetch results times. 
+PHP MySQL profiler allows you to trace SQL queries made in PHP code, the number of times they are called and the break down of their open, execution, prepare and fetch results times.
+
+![PHP MySQL Profiler](http://www.baikuzin.com/GitHub/mysqli/mysqli_profiler.gif)
+ 
 
 How to Profile SQL queries in PHP Code
 Set
