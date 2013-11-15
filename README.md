@@ -55,7 +55,7 @@ Insert this into your php script
 
 	
     print_r(MySQL::profiler_getDecorLog());		// Get decorated table
-	// print_r(MySQL::profiler_getDecorLog());	// Get simple array
+	// print_r(MySQL::profiler_getLog());	// Get simple array
 
 
 #### PHP MySQL Profiler ####
