@@ -5,10 +5,16 @@
     * 
     * 
     * @example	$mysqli = MySQL::get_connect();
+    * 			$mysqli = MySQL::get_connect('log');
+    * 
+    * 			MySQL::profiler_on();
+    * 			MySQL::profiler_getLog();
+    * 			MySQL::profiler_getDecorLog();
+    * 
     * 
     * @author	Maxim Baikuzin <maxim@baikuzin.com> 
     * 			http://www.baikuzin.com
-    * @version	12.11.2013
+    * @version	15.11.2013
     * @license 	GNU GPLv3
     */
 
@@ -16,33 +22,42 @@
     
     class MySQL extends mysqli implements config_db {
         private static $_instance = array();
+        private static $_profiler;
+        private $_db;
 
-        private function __construct($db){
-            self::connect_open($db);
+        private function __construct($_db){
+            $this->_db = $_db;
+            if (self::$_profiler) {
+            	$this->profiler_connect_open();
+            }
+            else {
+            	$this->connect_open();
+            }
         }                                  
-        private function connect_open($db) {
-            @parent::__construct(constant("self::DB_HOST_$db"), constant("self::DB_USER_$db"), constant("self::DB_PASS_$db"), constant("self::DB_NAME_$db"));
-            if ($this->connect_error) self::error_503($this->connect_error);
-        }                                   
         /**
         * Get connection
         * 
-        * @param mixed local, replica, log
-        * @param mixed On/Off Profile MySQL
+        * @param mixed local, replica, log or etc
         */
-        public static function get_connect($db = 'local', $profiler = false) {
+        public static function get_connect($_db = 'local') {
         	// Connect / Reconnect
-            if (null === self::$_instance[$db] OR self::$_instance[$db]->ping() === false) {
-            	if ($profiler === false) {
-            		self::$_instance[$db] = new self($db);
-				} 
-				else {
-					self::$_instance[$db] = new MySQL_Profiler($db);
-				}
-                return self::$_instance[$db];
+            if (null === self::$_instance[$_db] OR self::$_instance[$_db]->ping() === false) {
+            	self::$_instance[$_db] = new self($_db);
             }                         
-            return self::$_instance[$db];                       
+            return self::$_instance[$_db];                       
         }
+        private function connect_open() {
+            @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
+            if ($this->connect_error) self::error_503($this->connect_error);         
+        }   
+        public function query($Query) {
+            if (self::$_profiler) {
+            	$this->profiler_query($Query);
+            }
+            else {
+            	parent::query($Query);
+            }        	       	                       
+        }                
         private function __clone() { } 
         private function __wakeup(){ }        
         private function error_503($error) {
@@ -68,7 +83,67 @@
             fwrite($fp, "[{$date}] {$error} \r\n");
             fclose($fp);
             exit;
-        }       
+        }  
+        
+        // PROFILER'S METHODS
+
+        /**
+        * Turn on MySQL Profiler
+        */
+        public static function profiler_on() {
+        	self::$_profiler = new MySQL_Profiler();
+        }         
+        private function profiler_connect_open() {
+        	$real_time = microtime(true);	
+            @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
+            if ($this->connect_error) self::error_503($this->connect_error);   
+			$real_time = number_format(microtime(true) - $real_time, 7, '.', '');
+			self::$_profiler->addToLog(constant("self::DB_NAME_{$this->_db}"), "CONNECT ".constant("self::DB_USER_{$this->_db}").":password@".constant("self::DB_HOST_{$this->_db}")."/".constant("self::DB_NAME_{$this->_db}")."", $real_time, 0, $this->connect_error, $this->connect_errno, '', '');
+        }                                   
+		private function profiler_query($Query) {
+        	$real_time = microtime(true);	
+            parent::query($Query);
+			$real_time = number_format(microtime(true) - $real_time, 7, '.', '');
+			$error = $this->error;
+			$errcode = $this->errno;
+			$affected_rows = $this->affected_rows;
+			//			
+			//DELETE [table] FROM tables ... => SELECT * FROM tables
+			$Query = preg_replace('/^(\\s*DELETE\\s.*?FROM)/ism', "SELECT * FROM\n", $Query);
+			//UPDATE table SET data [WHERE...] => SELECT * FROM table [WHERE...]
+			$Query = preg_replace('/^(\\s*UPDATE\\s+)/ism', "SELECT * FROM\n", $Query);
+			$Query = preg_replace('/(\\s+SET\\s+.*?WHERE)/ism', "\nWHERE\n", $Query);
+			$Query = preg_replace('/(\\s+SET\\s+.*?)/ism', "", $Query);
+			//Trying to extract SELECT from INSERT/REPLACE INTO ... AS or CREATE TABLE ... AS      
+			$matches = array();
+			if (preg_match('/(SELECT\\s.*?FROM\\s.*$)/ism', $Query, $matches)) {
+				//Got SELECT, now do EXPLAIN SELECT 
+				//$matches[1] = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $matches[1]);
+				$result = parent::query("EXPLAIN EXTENDED \n" . $matches[1]);    // todo SQL_NO_CACHE
+				if (false !== $result) {
+					$explain = array();
+					while ($array = $result->fetch_assoc()) {
+						$explain[] = $array;
+					}
+					$result->close();
+					$result = parent::query("SHOW WARNINGS");
+					if (false !== $result) {
+						$rewritten = array();
+						while ($array = $result->fetch_assoc()) {
+							$rewritten[] = $array['Message'];
+						}
+						$result->close();
+					}
+				}
+			}  
+            self::$_profiler->addToLog(constant("self::DB_NAME_{$this->_db}"), $Query, $real_time, $affected_rows, $error, $errcode, $explain, $rewritten);
+		}          
+        public static function profiler_getLog() {
+        	return self::$_profiler->getLog();
+        }                             
+        public static function profiler_getDecorLog() {
+        	return self::$_profiler->getDecorLog();
+        }      
     }
 
 
