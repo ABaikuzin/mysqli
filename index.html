@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Mysqli : PHP MySQLi Class with using Singleton (Multiple connections / PHP MySQL Profiler)" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Mysqli</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/MaximBaikuzin/mysqli">View on GitHub</a>
+
+          <h1 id="project_title">Mysqli</h1>
+          <h2 id="project_tagline">PHP MySQLi Class with using Singleton (Multiple connections / PHP MySQL Profiler)</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/MaximBaikuzin/mysqli/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/MaximBaikuzin/mysqli/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="php-mysqli-class-multiple-connections--php-mysql-profiler" class="anchor" href="#php-mysqli-class-multiple-connections--php-mysql-profiler"><span class="octicon octicon-link"></span></a>PHP MySQLi Class (Multiple connections / PHP MySQL Profiler)</h2>
+
+<p>PHP5 OOP DB Connection Class with MySQLi using Singleton, which support multiple connections.
+MySQLi connection avaliable to all MVC modules.</p>
+
+<h4>
+<a name="use" class="anchor" href="#use"><span class="octicon octicon-link"></span></a>Use</h4>
+
+<p>Setting up config vars into <strong>config_db.php</strong></p>
+
+<pre><code>interface config_db {
+    // DB #1
+    const DB_HOST_local = 'localhost';
+    const DB_USER_local = 'user';  
+    const DB_PASS_local = 'pass'; 
+    const DB_NAME_local = 'db1'; 
+
+    // DB #2
+    const DB_HOST_log = 'localhost';
+    const DB_USER_log = 'user';  
+    const DB_PASS_log = 'pass'; 
+    const DB_NAME_log = 'db2';
+}
+</code></pre>
+
+<p>Insert this into your php script</p>
+
+<pre><code>require_once(__DIR__ . '/class.mysql.php');
+require_once(__DIR__ . '/class.mysql_profiler.php');
+
+// Turn On MySQL Profiler
+MySQL::profiler_on();
+
+$mysqli = MySQL::get_connect();             // DB #1 (Default - local)
+$mysqli_log = MySQL::get_connect('log');    // DB #2, If you need multiple connections
+
+$Query = "
+            SELECT
+                * 
+            FROM 
+                `m4`
+            WHERE 
+                `m4_id` = '100'
+            LIMIT
+                1
+            ;";
+$result = $mysqli-&gt;query($Query);     
+
+$Query = "
+            SELECT
+                * 
+            FROM 
+                `parser`
+            ORDER BY 
+                `id` DESC
+            ;";
+$result = $mysqli_log-&gt;query($Query);    
+
+
+print_r(MySQL::profiler_getDecorLog());     // Get decorated table
+// print_r(MySQL::profiler_getLog());   // Get simple array
+</code></pre>
+
+<h4>
+<a name="php-mysql-profiler" class="anchor" href="#php-mysql-profiler"><span class="octicon octicon-link"></span></a>PHP MySQL Profiler</h4>
+
+<p>PHP MySQL profiler allows you to trace SQL queries made in PHP code, the number of times they are called and the break down of their open, execution, prepare and fetch results times.</p>
+
+<p><img src="http://www.baikuzin.com/GitHub/mysqli/mysqli_profiler.gif" alt="PHP MySQL Profiler"></p>
+
+<p>Analyze the code profiling results in the profiler window. PHP SQL profiler provides the following options to use for the inspection of the results and php code navigation:<br>
+1. <strong>Location</strong> - Shows the code lines where SQL query is executed.<br>
+2. <strong>Connection</strong> - Shows the time spent to open connection to the database<br>
+3. <strong>Time</strong> - Shows time spent to fetch this SQL results<br>
+4. <strong>Info</strong> - Shows the columns - select_type, type, possible_keys, key, key_len, ref, rows, filtered, extra. </p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Mysqli maintained by <a href="https://github.com/MaximBaikuzin">MaximBaikuzin</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
