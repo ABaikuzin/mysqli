@@ -62,21 +62,10 @@ Insert this into your php script
 PHP MySQL profiler allows you to trace SQL queries made in PHP code, the number of times they are called and the break down of their open, execution, prepare and fetch results times.
 
 ![PHP MySQL Profiler](http://www.baikuzin.com/GitHub/mysqli/mysqli_profiler.gif)
+
+Analyze the code profiling results in the profiler window. PHP SQL profiler provides the following options to use for the inspection of the results and php code navigation:  
+1. **Location** - Shows the code lines where SQL query is executed.   
+2. **Connection** - Shows the time spent to open connection to the database  
+3. **Time** - Shows time spent to fetch this SQL results  
+4. **Info** - Shows the columns - select_type, type, possible_keys, key, key_len, ref, rows, filtered, extra. 
  
-
-How to Profile SQL queries in PHP Code
-Set
-Analyze the code profiling results in the profiler window.  
-
-
-How to Use the results of PHP SQL Profiler
-PHP SQL profiler provides the following options to use for the inspection of the results and php code navigation 
-1.Location. Shows the code lines where SQL query is executed. 
-2.Open. Shows the time spent to open connection to the database 
-3.Free. Shows the time spent to free all the associated resources 
-4.Prepare. Shows the time spent to prepare SQL query (if prepare is used) 
-5.#Exec. Shows the number of times corresponding SQL query is executed during the run of the profiler 
-6.Exec. Shows the time of SQL execution 
-7.#Fetch. Shows the number of times SQL results were fetched during the profiler run 
-8.Fetch. Shows time spent to fetch this SQL results 
-9.Chart. Shows the relative value of every SQL. The highest value is assigned with 100%, while the others are shown as against to this one. In the popup menu you can select any output column to be displayed in the chart. 
