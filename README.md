@@ -6,44 +6,56 @@ MySQLi connection avaliable to all MVC modules.
 #### Use ####
 Setting up config vars into **config_db.php**
 
-    // DB #1
-	const DB_HOST_local = 'localhost';
-    const DB_USER_local = 'user';  
-    const DB_PASS_local = 'pass'; 
-    const DB_NAME_local = 'db1'; 
-
-    // DB #2
-	const DB_HOST_log = 'localhost';
-    const DB_USER_log = 'user';  
-    const DB_PASS_log = 'pass'; 
-    const DB_NAME_log = 'db2';
+	interface config_db {
+		// DB #1
+		const DB_HOST_local = 'localhost';
+		const DB_USER_local = 'user';  
+		const DB_PASS_local = 'pass'; 
+		const DB_NAME_local = 'db1'; 
+	
+		// DB #2
+		const DB_HOST_log = 'localhost';
+		const DB_USER_log = 'user';  
+		const DB_PASS_log = 'pass'; 
+		const DB_NAME_log = 'db2';
+	}
   
 Insert this into your php script
 
-    require_once(__DIR__ . '/mysqli/class.mysql.php');
-
-Query for DB #1 (Default - local)
+    require_once(__DIR__ . '/class.mysql.php');
+    require_once(__DIR__ . '/class.mysql_profiler.php');
 	
-	$mysqli = MySQL::get_connect();
+	// Turn On MySQL Profiler
+    MySQL::profiler_on();
+    
+    $mysqli = MySQL::get_connect();				// DB #1 (Default - local)
+    $mysqli_log = MySQL::get_connect('log');	// DB #2, If you need multiple connections
+	
 	$Query = "
             	SELECT
 	                * 
                 FROM 
-	                `table_name`
+	                `m4`
+	            WHERE 
+	            	`m4_id` = '100'
+	            LIMIT
+	            	1
 	            ;";
-	$result = $mysqli->query($Query); 
-
-If you need multiple connections  
-Query for DB #2
-	
-	$mysqli_db2 = MySQL::get_connect('log');
-	$Query_db2 = "
+	$result = $mysqli->query($Query);     
+		
+	$Query = "
             	SELECT
 	                * 
                 FROM 
-	                `table_name`
+	                `parser`
+	            ORDER BY 
+	            	`id` DESC
 	            ;";
-	$result_db2 = $mysqli_db2->query($Query_db2);
+	$result = $mysqli_log->query($Query);    
+
+	
+    print_r(MySQL::profiler_getDecorLog());		// Get decorated table
+	// print_r(MySQL::profiler_getDecorLog());	// Get simple array
 
 
 #### PHP MySQL Profiler ####
