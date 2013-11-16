@@ -107,18 +107,19 @@
 			$error = $this->error;
 			$errcode = $this->errno;
 			$affected_rows = $this->affected_rows;
-			//			
+			//
+			$Query_Explain = $Query; 			
 			//DELETE [table] FROM tables ... => SELECT * FROM tables
-			$Query = preg_replace('/^(\\s*DELETE\\s.*?FROM)/ism', "SELECT * FROM\n", $Query);
+			$Query_Explain = preg_replace('/^(\\s*DELETE\\s.*?FROM)/ism', "SELECT * FROM\n", $Query_Explain);
 			//UPDATE table SET data [WHERE...] => SELECT * FROM table [WHERE...]
-			$Query = preg_replace('/^(\\s*UPDATE\\s+)/ism', "SELECT * FROM\n", $Query);
-			$Query = preg_replace('/(\\s+SET\\s+.*?WHERE)/ism', "\nWHERE\n", $Query);
-			$Query = preg_replace('/(\\s+SET\\s+.*?)/ism', "", $Query);
+			$Query_Explain = preg_replace('/^(\\s*UPDATE\\s+)/ism', "SELECT * FROM\n", $Query_Explain);
+			$Query_Explain = preg_replace('/(\\s+SET\\s+.*?WHERE)/ism', "\nWHERE\n", $Query_Explain);
+			$Query_Explain = preg_replace('/(\\s+SET\\s+.*?)/ism', "", $Query_Explain);
 			//Trying to extract SELECT from INSERT/REPLACE INTO ... AS or CREATE TABLE ... AS      
 			$matches = array();
 			$explain = array();
 			$rewritten = array();
-			if (preg_match('/(SELECT\\s.*?FROM\\s.*$)/ism', $Query, $matches)) {
+			if (preg_match('/(SELECT\\s.*?FROM\\s.*$)/ism', $Query_Explain, $matches)) {
 				//Got SELECT, now do EXPLAIN SELECT 
 				//$matches[1] = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $matches[1]);
 				$result = parent::query("EXPLAIN EXTENDED \n" . $matches[1]);    // todo SQL_NO_CACHE
