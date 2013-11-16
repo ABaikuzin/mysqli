@@ -14,7 +14,7 @@
     * 
     * @author	Maxim Baikuzin <maxim@baikuzin.com> 
     * 			http://www.baikuzin.com
-    * @version	15.11.2013
+    * @version	17.11.2013
     * @license 	GNU GPLv3
     */
 
@@ -116,19 +116,19 @@
 			$Query = preg_replace('/(\\s+SET\\s+.*?)/ism', "", $Query);
 			//Trying to extract SELECT from INSERT/REPLACE INTO ... AS or CREATE TABLE ... AS      
 			$matches = array();
+			$explain = array();
+			$rewritten = array();
 			if (preg_match('/(SELECT\\s.*?FROM\\s.*$)/ism', $Query, $matches)) {
 				//Got SELECT, now do EXPLAIN SELECT 
 				//$matches[1] = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $matches[1]);
 				$result = parent::query("EXPLAIN EXTENDED \n" . $matches[1]);    // todo SQL_NO_CACHE
 				if (false !== $result) {
-					$explain = array();
 					while ($array = $result->fetch_assoc()) {
 						$explain[] = $array;
 					}
 					$result->close();
 					$result = parent::query("SHOW WARNINGS");
 					if (false !== $result) {
-						$rewritten = array();
 						while ($array = $result->fetch_assoc()) {
 							$rewritten[] = $array['Message'];
 						}
