@@ -41,7 +41,7 @@
         */
         public static function get_connect($_db = 'local') {
         	// Connect / Reconnect
-            if (null === self::$_instance[$_db] OR self::$_instance[$_db]->ping() === false) {
+            if (!isset(self::$_instance[$_db]) OR null === self::$_instance[$_db] OR self::$_instance[$_db]->ping() === false) {
             	self::$_instance[$_db] = new self($_db);
             }                         
             return self::$_instance[$_db];                       
