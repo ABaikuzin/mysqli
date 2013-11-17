@@ -123,18 +123,18 @@
 			if (preg_match('/(SELECT\\s.*?FROM\\s.*$)/ism', $Query_Explain, $matches)) {
 				//Got SELECT, now do EXPLAIN SELECT 
 				//$matches[1] = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $matches[1]);
-				$result = parent::query("EXPLAIN EXTENDED \n" . $matches[1]);    // todo SQL_NO_CACHE
-				if (false !== $result) {
-					while ($array = $result->fetch_assoc()) {
+				$result_explain = parent::query("EXPLAIN EXTENDED \n" . $matches[1]);    // todo SQL_NO_CACHE
+				if (false !== $result_explain) {
+					while ($array = $result_explain->fetch_assoc()) {
 						$explain[] = $array;
 					}
-					$result->close();
-					$result = parent::query("SHOW WARNINGS");
-					if (false !== $result) {
-						while ($array = $result->fetch_assoc()) {
+					$result_explain->close();
+					$result_explain = parent::query("SHOW WARNINGS");
+					if (false !== $result_explain) {
+						while ($array = $result_explain->fetch_assoc()) {
 							$rewritten[] = $array['Message'];
 						}
-						$result->close();
+						$result_explain->close();
 					}
 				}
 			}  
