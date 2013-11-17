@@ -6,7 +6,7 @@ MySQLi connection avaliable to all MVC modules.
 #### Use ####
 Setting up config vars into **config_db.php**
 
-	interface config_db {
+	class config_db {
 		// DB #1
 		const DB_HOST_local = 'localhost';
 		const DB_USER_local = 'user';  

@@ -14,13 +14,13 @@
     * 
     * @author	Maxim Baikuzin <maxim@baikuzin.com> 
     * 			http://www.baikuzin.com
-    * @version	17.11.2013
+    * @version	18.11.2013
     * @license 	GNU GPLv3
     */
 
     require_once(__DIR__ . '/config_db.php');
     
-    class MySQL extends mysqli implements config_db {
+    class MySQL extends mysqli {
         private static $_instance = array();
         private static $_profiler;
         private $_db;
@@ -47,7 +47,7 @@
             return self::$_instance[$_db];                       
         }
         private function connect_open() {
-            $_connection = @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
+            $_connection = @parent::__construct(constant("config_db::DB_HOST_{$this->_db}"), constant("config_db::DB_USER_{$this->_db}"), constant("config_db::DB_PASS_{$this->_db}"), constant("config_db::DB_NAME_{$this->_db}"));
             if ($this->connect_error) self::error_503($this->connect_error);
         }   
         public function query($Query) {
@@ -96,10 +96,10 @@
         }         
         private function profiler_connect_open() {
         	$real_time = microtime(true);	
-            @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
+            @parent::__construct(constant("config_db::DB_HOST_{$this->_db}"), constant("config_db::DB_USER_{$this->_db}"), constant("config_db::DB_PASS_{$this->_db}"), constant("config_db::DB_NAME_{$this->_db}"));
             if ($this->connect_error) self::error_503($this->connect_error);   
 			$real_time = number_format(microtime(true) - $real_time, 7, '.', '');
-			self::$_profiler->addToLog(constant("self::DB_NAME_{$this->_db}"), "CONNECT ".constant("self::DB_USER_{$this->_db}").":password@".constant("self::DB_HOST_{$this->_db}")."/".constant("self::DB_NAME_{$this->_db}")."", $real_time, 0, $this->connect_error, $this->connect_errno, '', '');
+			self::$_profiler->addToLog(constant("config_db::DB_NAME_{$this->_db}"), "CONNECT ".constant("config_db::DB_USER_{$this->_db}").":password@".constant("config_db::DB_HOST_{$this->_db}")."/".constant("config_db::DB_NAME_{$this->_db}")."", $real_time, 0, $this->connect_error, $this->connect_errno, '', '');
         }                                   
 		private function profiler_query($Query) {
         	$real_time = microtime(true);	
@@ -138,7 +138,7 @@
 					}
 				}
 			}  
-            self::$_profiler->addToLog(constant("self::DB_NAME_{$this->_db}"), $Query, $real_time, $affected_rows, $error, $errcode, $explain, $rewritten);
+            self::$_profiler->addToLog(constant("config_db::DB_NAME_{$this->_db}"), $Query, $real_time, $affected_rows, $error, $errcode, $explain, $rewritten);
             return $result;
 		}          
         public static function profiler_getLog() {
