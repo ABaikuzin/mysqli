@@ -27,11 +27,11 @@
 
         private function __construct($_db){
             $this->_db = $_db;
-            if (self::$_profiler) {
-            	$this->profiler_connect_open();
-            }
-            else {
+            if (!isset(self::$_profiler)) { 
             	$this->connect_open();
+            }
+            else { 
+            	$this->profiler_connect_open();
             }
         }                                  
         /**
@@ -43,20 +43,21 @@
         	// Connect / Reconnect
             if (!isset(self::$_instance[$_db]) OR null === self::$_instance[$_db] OR self::$_instance[$_db]->ping() === false) {
             	self::$_instance[$_db] = new self($_db);
-            }                         
+            }                      
             return self::$_instance[$_db];                       
         }
         private function connect_open() {
-            @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
-            if ($this->connect_error) self::error_503($this->connect_error);         
+            $_connection = @parent::__construct(constant("self::DB_HOST_{$this->_db}"), constant("self::DB_USER_{$this->_db}"), constant("self::DB_PASS_{$this->_db}"), constant("self::DB_NAME_{$this->_db}"));
+            if ($this->connect_error) self::error_503($this->connect_error);
         }   
         public function query($Query) {
-            if (self::$_profiler) {
-            	$this->profiler_query($Query);
+            if (!isset(self::$_profiler)) {
+            	$result = parent::query($Query);
             }
             else {
-            	parent::query($Query);
-            }        	       	                       
+            	$result = $this->profiler_query($Query);
+            }   
+            return $result;     	       	                       
         }                
         private function __clone() { } 
         private function __wakeup(){ }        
@@ -102,7 +103,7 @@
         }                                   
 		private function profiler_query($Query) {
         	$real_time = microtime(true);	
-            parent::query($Query);
+            $result = parent::query($Query);
 			$real_time = number_format(microtime(true) - $real_time, 7, '.', '');
 			$error = $this->error;
 			$errcode = $this->errno;
@@ -138,6 +139,7 @@
 				}
 			}  
             self::$_profiler->addToLog(constant("self::DB_NAME_{$this->_db}"), $Query, $real_time, $affected_rows, $error, $errcode, $explain, $rewritten);
+            return $result;
 		}          
         public static function profiler_getLog() {
         	return self::$_profiler->getLog();
