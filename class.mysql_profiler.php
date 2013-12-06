@@ -234,7 +234,6 @@ HTML;
 				$key_len       = &$x['key_len'];
 				$ref           = &$x['ref'];
 				$rows          = &$x['rows'];
-				$filtered      = &$x['filtered'];
 				$extra         = &$x['Extra'];
 				// 
 				switch ($select_type) {
